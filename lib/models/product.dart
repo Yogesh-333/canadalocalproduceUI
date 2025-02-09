@@ -3,7 +3,7 @@ class Product {
   final int id;
   final String name;
   final String description;
-  final String price; // Changed from double to String
+  final String price;
   final int categoryId;
   final String imageUrl;
   final String affiliateUrl;

@@ -1,8 +1,7 @@
 // lib/widgets/product_card.dart
-// ... (previous imports)
-
-import 'package:canada_produce/models/product.dart';
+import 'package:canada_produce/widgets/cached_image.dart';
 import 'package:flutter/material.dart';
+import '../models/product.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
@@ -24,77 +23,112 @@ class _ProductCardState extends State<ProductCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => isHovered = true),
       onExit: (_) => setState(() => isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        transform: Matrix4.identity()..scale(isHovered ? 1.05 : 1.0),
-        child: Card(
-          elevation: isHovered ? 8 : 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(12)),
-                child: Image.network(
-                  widget.product.imageUrl,
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 200,
-                      color: Colors.grey[200],
-                      child: const Icon(
-                        Icons.image_not_supported,
-                        size: 50,
-                        color: Colors.grey,
-                      ),
-                    );
-                  },
+      child: GestureDetector(
+        onTap: () {
+          // Handle product click
+          if (widget.product.affiliateUrl.isNotEmpty) {
+            // Launch URL
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          transform: Matrix4.identity()..scale(isHovered ? 1.05 : 1.0),
+          child: Card(
+            elevation: isHovered ? 8 : 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image Section
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  child: AspectRatio(
+                    aspectRatio: 1.5,
+                    child: CachedImageWidget(
+                      imageUrl: widget.product.imageUrl,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.product.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+
+                // Content Section
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Product Name
+                      Text(
+                        widget.product.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '\$${widget.product.price}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFFE31837),
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(height: 4),
+
+                      // Price
+                      Text(
+                        '\$${widget.product.price}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFFE31837),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      widget.product.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      const SizedBox(height: 4),
+
+                      // Description
+                      Text(
+                        widget.product.description,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+
+                      // Optional: Add to Cart or View Details Button
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Handle button click
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isHovered
+                                  ? const Color(0xFFE31837)
+                                  : Colors.white,
+                              foregroundColor: isHovered
+                                  ? Colors.white
+                                  : const Color(0xFFE31837),
+                              elevation: isHovered ? 4 : 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: const BorderSide(
+                                  color: Color(0xFFE31837),
+                                ),
+                              ),
+                            ),
+                            child: const Text('View Details'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -163,18 +163,66 @@ class _BannerSectionState extends State<BannerSection> {
                 ),
 
                 // Right side - Logo
+                // Right side - Logo
+                // Right side - Logo
                 Expanded(
                   flex: 2,
                   child: Center(
-                    child: Image.asset(
-                      AppConstants.logoUrl,
-                      height: 300,
-                      width: 300,
-                      fit: BoxFit.contain,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        // Bottom white box
+                        Container(
+                          width: 280,
+                          height: 320,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Middle red box
+                        Positioned(
+                          child: Container(
+                            width: 240, // Smaller than white box
+                            height: 280, // Smaller than white box
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE31837),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFFE31837).withOpacity(0.3),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // Logo on top
+                        Positioned(
+                          child: Image.asset(
+                            AppConstants.logoUrl,
+                            height: 200,
+                            width: 200,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ],
                     )
                         .animate()
                         .fadeIn(duration: 600.ms)
-                        .scale(begin: Offset(0, 8), duration: 600.ms),
+                        .slideY(begin: 0.3, duration: 800.ms),
                   ),
                 ),
               ],
