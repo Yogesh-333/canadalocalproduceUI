@@ -1,16 +1,18 @@
 // lib/providers/products_provider.dart
-import 'dart:developer';
-
-import 'package:canada_produce/models/category.dart';
-import 'package:canada_produce/models/product.dart';
-import 'package:canada_produce/services/api_service.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer';
+import '../models/product.dart';
+import '../models/category.dart';
+import '../services/api_service.dart';
 
 class ProductsProvider with ChangeNotifier {
   final ApiService _apiService = ApiService();
+
+  // Products state
   List<Product> _products = [];
   List<Category> _categories = [];
   bool _isLoading = false;
+  bool _isSearching = false;
   String? _error;
 
   // Pagination
@@ -23,11 +25,13 @@ class ProductsProvider with ChangeNotifier {
   Category? _selectedCategory;
   String? _sortBy;
   String? _orderBy;
+  String _searchQuery = '';
 
   // Getters
   List<Product> get products => _products;
   List<Category> get categories => _categories;
   bool get isLoading => _isLoading;
+  bool get isSearching => _isSearching;
   String? get error => _error;
   int get currentPage => _currentPage;
   int get totalPages => _totalPages;
@@ -35,17 +39,28 @@ class ProductsProvider with ChangeNotifier {
   Category? get selectedCategory => _selectedCategory;
   String? get sortBy => _sortBy;
   String? get orderBy => _orderBy;
+  String get searchQuery => _searchQuery;
 
+  // Load products with all filters
   Future<void> loadProducts({bool refresh = false}) async {
     if (refresh) {
       _currentPage = 1;
+      _products = [];
     }
+
+    if (_isLoading) return;
 
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      log('Loading products with filters: '
+          'page: $_currentPage, '
+          'category: ${_selectedCategory?.name}, '
+          'sortBy: $_sortBy, '
+          'order: $_orderBy');
+
       final result = await _apiService.getProducts(
         page: _currentPage,
         limit: _itemsPerPage,
@@ -54,47 +69,147 @@ class ProductsProvider with ChangeNotifier {
         order: _orderBy,
       );
 
-      _products = result.products;
+      if (refresh) {
+        _products = result.products;
+      } else {
+        _products.addAll(result.products);
+      }
+
       _currentPage = result.currentPage;
       _totalPages = result.totalPages;
       _totalItems = result.totalItems;
-    } catch (e) {
-      _error = e.toString();
+
+      log('Loaded ${result.products.length} products. '
+          'Total pages: $_totalPages, '
+          'Total items: $_totalItems');
+    } catch (e, stackTrace) {
+      log('Error loading products:', error: e, stackTrace: stackTrace);
+      _error = 'Failed to load products: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> loadCategories() async {
+  // Search products
+  Future<void> searchProducts(String query) async {
+    if (query == _searchQuery) return;
+
+    _searchQuery = query;
+    _isSearching = true;
+    notifyListeners();
+
     try {
-      _categories = await _apiService.getCategories();
-      notifyListeners();
-    } catch (e) {
-      // If categories fail to load, we'll use the default ones from the API service
-      log('Error loading categories: $e');
-      _categories = [];
+      if (query.isEmpty) {
+        // Reset search and load normal products
+        _selectedCategory = null;
+        _sortBy = null;
+        _orderBy = null;
+        await loadProducts(refresh: true);
+      } else {
+        log('Searching products with query: $query');
+
+        final result = await _apiService.searchProducts(
+          query: query,
+          page: 1,
+          limit: _itemsPerPage,
+        );
+
+        _products = result.products;
+        _currentPage = result.currentPage;
+        _totalPages = result.totalPages;
+        _totalItems = result.totalItems;
+
+        log('Found ${result.products.length} products for query: $query');
+      }
+    } catch (e, stackTrace) {
+      log('Error searching products:', error: e, stackTrace: stackTrace);
+      _error = 'Failed to search products: $e';
+    } finally {
+      _isSearching = false;
       notifyListeners();
     }
   }
 
+  // Load categories
+  Future<void> loadCategories() async {
+    if (_categories.isNotEmpty) return;
+
+    try {
+      log('Loading categories');
+      _categories = await _apiService.getCategories();
+      log('Loaded ${_categories.length} categories');
+    } catch (e, stackTrace) {
+      log('Error loading categories:', error: e, stackTrace: stackTrace);
+      _error = 'Failed to load categories: $e';
+      _categories = [];
+    }
+    notifyListeners();
+  }
+
+  // Set category filter
   void setCategory(Category? category) {
+    log('Setting category filter: ${category?.name}');
+    if (_selectedCategory?.id == category?.id) return;
+
     _selectedCategory = category;
+    _searchQuery = ''; // Clear search when changing category
     loadProducts(refresh: true);
   }
 
-  void setSortBy(String sortBy) {
+  // Set sort by
+  void setSortBy(String? sortBy) {
+    log('Setting sort by: $sortBy');
+    if (_sortBy == sortBy) return;
+
     _sortBy = sortBy;
     loadProducts(refresh: true);
   }
 
-  void setOrderBy(String orderBy) {
+  // Set order by
+  void setOrderBy(String? orderBy) {
+    log('Setting order by: $orderBy');
+    if (_orderBy == orderBy) return;
+
     _orderBy = orderBy;
     loadProducts(refresh: true);
   }
 
+  // Set page
   void setPage(int page) {
+    log('Setting page: $page');
+    if (_currentPage == page) return;
+
     _currentPage = page;
     loadProducts();
+  }
+
+  // Clear all filters
+  void clearFilters() {
+    log('Clearing all filters');
+    _selectedCategory = null;
+    _sortBy = null;
+    _orderBy = null;
+    _searchQuery = '';
+    loadProducts(refresh: true);
+  }
+
+  // Refresh data
+  Future<void> refresh() async {
+    log('Refreshing all data');
+    await loadCategories();
+    await loadProducts(refresh: true);
+  }
+
+  // Error handling
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    // Clean up if needed
+    super.dispose();
   }
 }

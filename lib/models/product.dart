@@ -1,4 +1,3 @@
-// lib/models/product.dart
 class Product {
   final int id;
   final String name;
@@ -9,6 +8,7 @@ class Product {
   final String affiliateUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? address; // Added address field
 
   Product({
     required this.id,
@@ -20,6 +20,7 @@ class Product {
     required this.affiliateUrl,
     required this.createdAt,
     required this.updatedAt,
+    this.address, // Added address field
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -33,6 +34,22 @@ class Product {
       affiliateUrl: json['affiliate_url'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
+      address: json['address'], // Added address field
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'category_id': categoryId,
+      'image_url': imageUrl,
+      'affiliate_url': affiliateUrl,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+      'address': address,
+    };
   }
 }

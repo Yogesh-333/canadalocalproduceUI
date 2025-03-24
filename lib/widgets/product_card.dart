@@ -1,7 +1,7 @@
-// lib/widgets/product_card.dart
 import 'package:canada_produce/widgets/cached_image.dart';
 import 'package:flutter/material.dart';
 import '../models/product.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
@@ -24,10 +24,16 @@ class _ProductCardState extends State<ProductCard> {
       onEnter: (_) => setState(() => isHovered = true),
       onExit: (_) => setState(() => isHovered = false),
       child: GestureDetector(
-        onTap: () {
-          // Handle product click
+        onTap: () async {
           if (widget.product.affiliateUrl.isNotEmpty) {
-            // Launch URL
+            final Uri url = Uri.parse(widget.product.affiliateUrl);
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Could not launch URL')),
+              );
+            }
           }
         },
         child: AnimatedContainer(
@@ -41,7 +47,6 @@ class _ProductCardState extends State<ProductCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image Section
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(12),
@@ -54,14 +59,11 @@ class _ProductCardState extends State<ProductCard> {
                     ),
                   ),
                 ),
-
-                // Content Section
                 Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Product Name
                       Text(
                         widget.product.name,
                         style: const TextStyle(
@@ -72,8 +74,6 @@ class _ProductCardState extends State<ProductCard> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-
-                      // Price
                       Text(
                         '\$${widget.product.price}',
                         style: const TextStyle(
@@ -83,8 +83,6 @@ class _ProductCardState extends State<ProductCard> {
                         ),
                       ),
                       const SizedBox(height: 4),
-
-                      // Description
                       Text(
                         widget.product.description,
                         style: TextStyle(
@@ -94,8 +92,18 @@ class _ProductCardState extends State<ProductCard> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-
-                      // Optional: Add to Cart or View Details Button
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.product.address != null
+                            ? 'Address: ${widget.product.address}'
+                            : 'Address: N/A',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
@@ -103,7 +111,8 @@ class _ProductCardState extends State<ProductCard> {
                           duration: const Duration(milliseconds: 200),
                           child: ElevatedButton(
                             onPressed: () {
-                              // Handle button click
+                              // Product details page navigation.
+                             // TODO: need to add action
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isHovered

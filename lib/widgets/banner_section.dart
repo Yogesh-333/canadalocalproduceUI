@@ -79,7 +79,7 @@ class _BannerSectionState extends State<BannerSection> {
 
                       // Main heading
                       const Text(
-                        'Support Local\nCanadian Farmers',
+                        'Support Local\nCanadian Produce',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 56,
