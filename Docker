@@ -1,0 +1,17 @@
+# Use Node.js to serve the web build
+FROM node:18-alpine
+
+# Install 'serve' globally
+RUN npm install -g serve
+
+# Set working directory
+WORKDIR /app
+
+# Copy web build files
+COPY build/web .
+
+# Expose the port
+EXPOSE 5000
+
+# Run the web server
+CMD ["serve", "-s", ".", "-l", "5000"]
